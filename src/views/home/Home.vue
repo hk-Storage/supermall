@@ -60,7 +60,8 @@
         isShowBackTop: false,
         tabOffsetTop: 0,  //tabcontrol距顶部位置
         isTabFixed: false, //是否需要吸顶
-        saveY: 0
+        saveY: 0,
+        itemImgListener: null
       }
     },
     components: {
@@ -84,7 +85,11 @@
       this.$refs.scroll.refresh()
     },
     deactivated() {
+      //1.保存Y值
       this.saveY = this.$refs.scroll.getScrollY()
+
+      //2.取消全局事件监听
+      this.$bus.$off('itemImgLoad', this.itemImgListener)
     },
     created() {
       // 1.请求多个数据
@@ -98,9 +103,11 @@
     mounted() {
       //1.监听item中图片加载完成
       const refresh = debounce(this.$refs.scroll.refresh, 200)
-      this.$bus.$on('itemImageLoad', () => {
+      //对监听事件保存
+      this.itemImgListener = () => {
         refresh()
-      })
+      }
+      this.$bus.$on('itemImageLoad', this.itemImgListener)
 
     },
     methods: {
@@ -120,6 +127,7 @@
             this.currentType = 'sell'
             break
         }
+        //让两个导航栏保持一致
         this.$refs.tabControl1.currentIndex = index;
         this.$refs.tabControl2.currentIndex = index;
       },
